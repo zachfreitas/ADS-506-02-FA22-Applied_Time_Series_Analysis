@@ -1,0 +1,111 @@
+---
+title: 'Assignment 1.1: Module 1 Exercises'
+author: "Zachariah Freitas"
+date: "`r Sys.Date()`"
+output: pdf_document
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Chapter 1:
+
+Approaching Forecasting (Page 23) #1-5 
+
+### Question 1.
+Is the goal of this study descriptive or predictive?
+
+#### Question CH1-Q1 Answer:
+
+### Question 2.
+
+What is the forecast horizon to consider in this task?
+Are next-month forecasts sufficient?
+
+#### Question CH1-Q2 Answer:
+
+### Question 3.
+
+What level of automation does this forecasting task require? Consider the four questions related to automation.
+
+#### Question CH1-Q3 Answer:
+
+### Question 4.
+
+What does the meaning of t = 1,2,3 in the Air series?
+Which time period does t = 1 refer to?
+
+#### Question CH1-Q4 Answer:
+
+### Question 5.
+
+What are the values for y1, y2, and y3 in the Air series?
+
+#### Question CH1-Q5 Answer:
+
+```{r cars}
+summary(cars)
+```
+
+## Chapter 2:
+
+Time Series Data (Page 43) #3
+
+### Question 3.
+
+Shipments of Household Appliance: The file ApplianceShipments.xls contains the series of quarterly shipments (in millions of USD) of U.S. household appliances between 1985-1989.
+
+a)  Create a well-formatted time plot of the data.
+
+b)  Which of the four components (level, trend, seasonality, noise) seem to be present in this series?
+
+
+#### Question CH2-Q3 Answer:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+## Chapter 3:
+
+Performance Evaluation (Pages 67-68) #2 and 3
+
+### Question 2.
+
+Forecasting Shampoo Sales: The file ShampooSales.xls contains data on the monthly sales of a certain shampoo over a three-year period.
+If the goal is forecasting sales in future months, which of the following steps should be taken?
+(choose one or more below).
+
+-   [ ] Partition the data into training and validation periods.
+-   [ ] Examine time plots of the series and of model forecasts only for the training period.
+-   [ ] Look at MAPE and RMSE values for the training period.
+-   [ ] Look at MAPE and RMSE values for the validation period.
+-   [ ] Compute naïve forecasts. Page 1 of 2
+
+
+#### Question CH3-Q2 Answer:
+
+### Question 3.
+
+Performance on Training and Validation Data: Two different models were fit to the same time series.
+The first 100 time periods were used for the training period and the last 12 periods were treated as a validation period.
+Assume that both models make sense practically and fit the data reasonably well.
+Below are the RMSE values for each of the models:
+
+| Model   | Training Period | Validation Period |
+|:--------|:---------------:|:-----------------:|
+| Model A |       543       |        690        |
+| Model B |       669       |        675        |
+
+a)  Which model appears more useful for retrospectively describing the different components of this time series?
+    Why?
+
+b)  Which model appears to be more useful for forecasting purposes?
+    Why?
+    
+    
+#### Question CH3-Q3 Answer:
