@@ -12,16 +12,20 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+------------------------------------------------------------------------
+
 ## Chapter 1:
 
-Approaching Forecasting (Page 23) #1-5 
+Approaching Forecasting (Page 23) #1-5
 
 ### Question 1.
+
 Is the goal of this study descriptive or predictive?
 
 #### Question CH1-Q1 Answer:
 
-**Answer:** The goal of this study is to be descriptive. To understand long distance  passenger travel behavior patterns before and after September 11th 2001.
+**Answer:** The goal of this study is to be descriptive.
+To understand the impact that 9/11 had on long distance passenger travel behavior patterns.
 
 ### Question 2.
 
@@ -31,6 +35,11 @@ Are next-month forecasts sufficient?
 #### Question CH1-Q2 Answer:
 
 ```{r 911}
+library(readxl)
+library(zoo)
+library(tidyverse)
+library(fpp2) # Plot and Forecast Data
+set.seed(506)
 
 Sept11Travel <- read_excel("Sept11Travel.xls", 
     col_types = c("date", "numeric", "numeric", 
@@ -51,20 +60,36 @@ ggplot(Sept11Travel, aes(x = Month, y = `Air RPM (000s)`, group = 1)) +
 #   geom_line(size = 1, color = "green") +
 #   theme_classic()
 
-  
-
-
 ```
 
-**Answer:** Impacts to 9/11 was felt for years after the attack. So looking at several months to several years might be appropriate. 
+**Answer:** Impacts to 9/11 was felt for years after the attack.
+You can visually see the impact in the chart above.
+So looking at a minimum of several months to several years would be appropriate.
 
 ### Question 3.
 
-What level of automation does this forecasting task require? Consider the four questions related to automation.
+What level of automation does this forecasting task require?
+Consider the four questions related to automation.
 
 #### Question CH1-Q3 Answer:
 
-**Answer:**
+**Answer:** Given my answers below the level automation required for this task is relatively low.
+
+1.  How many series need to be forecasted?\
+
+    **Answer:** Only three, "Air RPM (000s)", "Rail PM", and "VMT (billions)".
+
+2.  Is the forecasting an ongoing process or a one time event?\
+
+    **Answer:** This forecast is a one time event.
+    We hope.
+
+3.  Which data and software will be available during the forecasting period?\
+
+    **Answer:** A one time pull of Sept11Travel.xls data will be available and R will be used to analyze this data.
+    With the following additional libraries, readxl, zoo, tidyverse, and fpp2.
+
+4.  What forecasting expertise will be available **Answer:** Graduate level data scientist will be available for this task.
 
 ### Question 4.
 
@@ -73,13 +98,19 @@ Which time period does t = 1 refer to?
 
 #### Question CH1-Q4 Answer:
 
-**Answer:**
+**Answer:** t = 1,2,3 is an index denoting the time period of interest, with this data t = monthly periods.
+t = 1 is the fist period in the series, starting in January of 1990.
 
 ### Question 5.
 
-What are the values for y1, y2, and y3 in the Air series?
+What are the values for $y_1$, $y_2$, and $y_3$ in the Air series?
 
 #### Question CH1-Q5 Answer:
+
+**Answer:** $y_1$, $y_2$, and $y_3$ in the Air series, is a series of n values measured over n time periods, where $y_t$ denotes the value of the series at time period t.
+For example, this data is a series of monthly Air RPM (000's), t =1,2,3,... denotes month 1, month 2, and month3; $y_1$, $y_2$, and $y_3$ denote the Air RPM (000's) on months 1, 2, and 3.
+
+------------------------------------------------------------------------
 
 ## Chapter 2:
 
@@ -92,7 +123,6 @@ Shipments of Household Appliance: The file ApplianceShipments.xls contains the s
 a)  Create a well-formatted time plot of the data.
 
 b)  Which of the four components (level, trend, seasonality, noise) seem to be present in this series?
-
 
 #### Question CH2-Q3 Answer:
 
@@ -129,9 +159,10 @@ autoplot(MyTS) +
 
 ```
 
+**Answer:** Looking at the chart above that we can see traces of all four components present in the series.
+Some of the components are stronger than others, I would order them in terms of seasonality, trend as close contenders for strongest, followed by trend and then noise.
 
-**Answer:** Looking at the chart above that we can see traces of all four components present in the series.  Some of the components are stronger than others, I would order them in terms of seasonality, trend as close contenders for strongest, followed by trend and then noise.
-
+------------------------------------------------------------------------
 
 ## Chapter 3:
 
@@ -143,16 +174,17 @@ Forecasting Shampoo Sales: The file ShampooSales.xls contains data on the monthl
 If the goal is forecasting sales in future months, which of the following steps should be taken?
 (choose one or more below).
 
--   [ ] Partition the data into training and validation periods.
--   [ ] Examine time plots of the series and of model forecasts only for the training period.
--   [ ] Look at MAPE and RMSE values for the training period.
--   [ ] Look at MAPE and RMSE values for the validation period.
--   [ ] Compute naïve forecasts. Page 1 of 2
-
+-   [x] Partition the data into training and validation periods.
+-   [x] Examine time plots of the series and of model forecasts only for the training period.
+-   [x] Look at MAPE and RMSE values for the training period.
+-   [x] Look at MAPE and RMSE values for the validation period.
+-   [x] Compute naïve forecasts. Page 1 of 2
 
 #### Question CH3-Q2 Answer:
+**Answer:** I added more models and naïve forecasts than asked for. The best model appears to be the spline or the seasonal trend model. They beat all other naïve forecasts and models in RMSE and other metrics. See my results below.
 
-```{r shampoo}
+
+```{r shampoo_model_comparison}
 library(fpp2) # Plot and Forecast Data
 set.seed(506)
 
@@ -160,92 +192,6 @@ ShampooSales <- read_excel("ShampooSales.xlsx")
 
 ShampooSales$Month <- as.Date(ShampooSales$Month)
 
-
-# Create Time Series Object
-MyTS <- ts(ShampooSales$Shampoo_sales, 
-           start = c(1995, 1), 
-           frequency = 12)
-
-# MyTS
-
-train <- window(MyTS, 
-                start = c(1995, 1), 
-                end = c(1996, 12))
-# train
-validation <- window(MyTS, 
-                     start = c(1997, 1))
-# validation
-
-
-# Plot the Training and Validation Set
-autoplot(train) +
-  labs(title = "DGF Sales Volume Over Time",
-       x = "Time",
-       y = "Sales volume") +
-  theme_minimal() +
-  autolayer(validation, color = "blue")
-
-
-# naive model -
-# This takes the very last value of the training set.
-n_model <- naive(train, h = 12, level = 95)
-
-
-# Plot the Training Model with the Naive Model.
-autoplot(train) +
-  labs(title = "DGF Sales Volume Over Time",
-       x = "Time",
-       y = "Sales volume") +
-  theme_minimal() +
-  autolayer(n_model, color = "#006d2c", series = "Naive") +
-  autolayer(validation, color = "blue", series = "Actual")
-
-
-##################
-# Model: seasonal naive -
-# This takes a seasonal naive value.
-sn_model <- snaive(train, h = 12)
-
-autoplot(train) +
-  labs(title = "DGF Sales Volume Over Time",
-       x = "Time",
-       y = "Sales volume") +
-  theme_minimal() +
-  autolayer(sn_model, color = "#006d2c", series = "Seasonal Naive") +
-  autolayer(validation, color = "blue", series = "Actual")
-
-
-##################
-# Model season & trend
-st_model <- tslm(train ~ trend + season)
-
-summary(st_model)
-
-st_forecast <- forecast(st_model, h = 12)
-
-autoplot(train) +
-  labs(title = "DGF Sales Volume Over Time",
-       x = "Time",
-       y = "Sales volume") +
-  theme_minimal() +
-  autolayer(st_forecast, color = "#006d2c", series = "season trend") +
-  autolayer(validation, color = "blue", series = "Actual")
-
-
-###############################
-# Measure the errors
-
-accuracy(n_model)
-accuracy(sn_model)
-accuracy(st_forecast)
-
-
-n_model$fitted
-
-```
-
-
-```{r}
 h=12
 
 # Create Time Series Object
@@ -258,11 +204,14 @@ train <- window(MyTS,
                 start = c(1995, 1), 
                 end = c(1996, 12))
 
+
+# Naïve Models
+mean_fit <- meanf(train,h=h) # Naïve: Mean
+naive_fit <- naive(train,h=h,level = 95) # Naïve: Last Value
+drift_fit <- rwf(train,h=h,drift=TRUE) # Naïve: Drift Method
+snaive_fit <- snaive(train,h=h) # Naïve: Seasonal Naïve
+
 # Train Models
-mean_fit <- meanf(train,h=h)
-naive_fit <- naive(train,h=h,level = 95)
-drift_fit <- rwf(train,h=h,drift=TRUE) # Drift method
-snaive_fit <- snaive(train,h=h) # Seasonal Naïve 
 st_model <- tslm(train ~ trend + season)
 st_fit <- forecast(st_model,h=h)
 exp_model <- tslm(train ~ trend + season, lambda = 0)
@@ -272,42 +221,58 @@ spine_fit <- forecast(spline_model,h=h)
 
 # Plot Results
 autoplot(window(MyTS, start=1995)) +
-  autolayer(mean_fit, series="Mean", PI=FALSE) +
-  autolayer(drift_fit, series="Drift Method", PI=FALSE) +
-  autolayer(snaive_fit, series="Seasonal naïve", PI=FALSE) +
-  autolayer(naive_fit, series="Naïve", PI=FALSE) +
+  autolayer(mean_fit, series="Naïve: Mean", PI=FALSE) +
+  autolayer(drift_fit, series="Naïve: Drift Method", PI=FALSE) +
+  autolayer(snaive_fit, series="Naïve: Seasonal Naïve", PI=FALSE) +
+  autolayer(naive_fit, series="Naïve: Last Value", PI=FALSE) +
   autolayer(st_fit, series="Seasonal Trend", PI=FALSE) +
   autolayer(exp_fit, series="Exponential", PI=FALSE) +
   autolayer(spine_fit, series="Spline", PI=FALSE) +
-  xlab("Year") + 
-  ylab("Megalitres") +
-  ggtitle("Forecasts for quarterly beer production") +
+  xlab("Month") + 
+  ylab("Sales") +
+  ggtitle("Forecasts for monthly shampoo sales") +
   theme_minimal() +
   guides(colour=guide_legend(title="Forecast"))
 ```
 
-
-
-
-```{r}
+```{r train_vs_validation_results}
 window_df <- window(MyTS, start=1997)
+print(strrep("#", 80))
+print("Naïve: Mean")
 accuracy(mean_fit, window_df)
+
+print(strrep("#", 80))
+print("Naïve: Last Value")
 accuracy(naive_fit, window_df)
+
+print(strrep("#", 80))
+print("Naïve: Drift Method")
 accuracy(drift_fit, window_df)
+
+print(strrep("#", 80))
+print("Naïve: Seasonal Naïve")
 accuracy(snaive_fit, window_df)
+
+print(strrep("#", 80))
+print("Seasonal Trend")
 accuracy(st_fit, window_df)
+
+print(strrep("#", 80))
+print("Exponential")
 accuracy(exp_fit, window_df)
+
+print(strrep("#", 80))
+print("Spline")
 accuracy(spine_fit, window_df)
 
 ```
 
-
-```{r}
+```{r rolling_cross_validation}
+# This is here for my own edification.
 e <- tsCV(train, rwf, drift=TRUE, h=1)
 sqrt(mean(e^2, na.rm=TRUE))
 sqrt(mean(residuals(rwf(train, drift=TRUE))^2, na.rm=TRUE))
 ```
-
 
 ### Question 3.
 
@@ -326,8 +291,12 @@ a)  Which model appears more useful for retrospectively describing the different
 
 b)  Which model appears to be more useful for forecasting purposes?
     Why?
-    
-    
+
 #### Question CH3-Q3 Answer:
 
 **Answer:**
+
+a)  Model A appears more useful for retrospectively describing the different components of this time series because the root mean square error is smaller than that of model B suggesting a model fit is tighter and more reflective of what transpired during that time frame.
+
+b)  Model B appears more useful for forecasting purposes because the root mean square error is smaller than that of model A.
+    This suggests that model B generalizes better and is less over fit.
