@@ -10,6 +10,9 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+defaultW <- getOption("warn") 
+
+options(warn = -1) 
 ```
 
 ------------------------------------------------------------------------
@@ -41,13 +44,14 @@ library(tidyverse)
 library(fpp2) # Plot and Forecast Data
 set.seed(506)
 
+
 Sept11Travel <- read_excel("Sept11Travel.xls", 
     col_types = c("date", "numeric", "numeric", 
         "numeric"))
 
 
 ggplot(Sept11Travel, aes(x = Month, y = `Air RPM (000s)`, group = 1)) +
-  geom_line(size = 1, color = "green") +
+  geom_line(size = 1, color = "black") +
   theme_classic()
 
 # 
@@ -57,7 +61,7 @@ ggplot(Sept11Travel, aes(x = Month, y = `Air RPM (000s)`, group = 1)) +
 # 
 # 
 # ggplot(Sept11Travel, aes(x = Month, y = `VMT (billions)`, group = 1)) +
-#   geom_line(size = 1, color = "green") +
+#   geom_line(size = 1, color = "black") +
 #   theme_classic()
 
 ```
@@ -127,9 +131,7 @@ b)  Which of the four components (level, trend, seasonality, noise) seem to be p
 #### Question CH2-Q3 Answer:
 
 ```{r appliance_shipments}
-library(readxl)
-library(zoo)
-library(tidyverse)
+# Get data
 ApplianceShipments <- read_excel("ApplianceShipments.xlsx")
 
 # Convert Quarter character to date
@@ -154,8 +156,9 @@ MyTS <- ts(ApplianceShipments$Shipments,
 autoplot(MyTS) +
   labs(title = "Appliance Shipments Over Time",
        x = "Quarter",
-       y = "Shipments") +
+       y = "Shipments") + 
   theme_minimal()
+
 
 ```
 
@@ -181,17 +184,17 @@ If the goal is forecasting sales in future months, which of the following steps 
 -   [x] Compute naïve forecasts. Page 1 of 2
 
 #### Question CH3-Q2 Answer:
-**Answer:** I added more models and naïve forecasts than asked for. The best model appears to be the spline or the seasonal trend model. They beat all other naïve forecasts and models in RMSE and other metrics. See my results below.
+**Answer:** I added more models and naïve forecasts than asked for. The best model appears to be the Naïve: Drift Method followed by the Exponential and then the seasonal trend model. They beat all other naïve forecasts and models in RMSE and other metrics. See my results below.
 
 
 ```{r shampoo_model_comparison}
-library(fpp2) # Plot and Forecast Data
-set.seed(506)
-
+# Get Data
 ShampooSales <- read_excel("ShampooSales.xlsx")
 
+# Fix Date
 ShampooSales$Month <- as.Date(ShampooSales$Month)
 
+# Set Forcast periods
 h=12
 
 # Create Time Series Object
@@ -300,3 +303,10 @@ a)  Model A appears more useful for retrospectively describing the different com
 
 b)  Model B appears more useful for forecasting purposes because the root mean square error is smaller than that of model A.
     This suggests that model B generalizes better and is less over fit.
+    
+
+```{r undo_warnings, include=FALSE}
+options(warn = defaultW)
+```
+
+
