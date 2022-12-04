@@ -1,0 +1,16 @@
+---
+title: 'Assignment 6.1: Module 6 Exercises'
+author: "Zachariah Freitas"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+defaultW <- getOption("warn") 
+
+options(warn = -1) 
+```
+
+

@@ -1,0 +1,212 @@
+---
+title: 'Assignment 6.1: Module 6 Exercises'
+author: "Zachariah Freitas"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(fig.path = 'figures/', fig.pos = 'htb!', echo = TRUE)
+knit_hooks$set(plot = function(x, options)  {
+  hook_plot_tex(x, options)
+})
+
+defaultW <- getOption("warn") 
+
+options(warn = -1) 
+```
+
+# ADS 506 Module 6 Exercises: Chapter 9
+
+This assignment is due on Day 7 of the learning week. The assignment for this module is a mixture of programming and written work. Complete this entire assignment in R Markdown. You will need to include the question and number that you are answering within your submitted assignment. **Once completed, you will knit your deliverable to a Word/PDF file.**
+
+## Chapter 9: Neural Networks (Page 201): #2 & 3
+
+Forecasting Australian Wine Sales: Figure 6.26 shows time plots of monthly sales of six types of Australian wines (red, rose, sweet white, dry white, sparkling, and fortified) for 1980-1994. Data available in AustralianWines.csv. The units are thousands of liters. You are hired to obtain short-term forecasts (2-3 months ahead) for each of the six series, and this task will be repeated every month.
+
+```{r get data, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%"}
+library(fpp2)
+library(zoo)
+library(readr)
+library(dplyr)
+library(caret) # For the confusion Matrix
+
+set.seed(506)
+
+AustralianWines <- read_csv("data/AustralianWines.csv", 
+                            col_types = cols(Month = col_date(format = "%b-%y")))
+
+```
+\newpage
+
+2\. Use neural networks to forecast fortified wine sales, as follows:
+
+-   Partition the data using the period until December 1993 as the training period.
+-   Run a neural network using R's nnetar with 11 non-seasonal lags (i.e., p = 11). Leave all other arguments at their default.
+
+
+```{r}
+# Create Time Series Object
+Fortified <- ts(AustralianWines$Fortified, start = c(1980, 1), frequency = 12)
+# Training and test partitions
+Fort.train <- window(Fortified, end = c(1993, 12))
+Fort.test <- window(Fortified, start = c(1994, 1), end = c(1994,12))
+
+
+Fortified.nnetar <- nnetar(Fort.train, p = 11)
+summary(Fortified.nnetar)
+
+```
+
+\newpage
+
+a.  Create a time plot for the actual and forecasted series over the training period. Create also a time plot of the forecast errors for the training period. Interpret what you see in the plots.
+
+```{r}
+
+autoplot(Fort.train, series = "Actual") +
+  autolayer(Fortified.nnetar$fitted, series = "NN") +
+  guides(color = guide_legend(title = "Series")) +
+  scale_color_manual(values = c(Actual = "black", NN = "red")) +
+  theme_classic() +
+  # coord_cartesian(xlim = c(15, 18)) +
+  theme(legend.position = "top") 
+
+```
+
+\newpage
+
+Create a time plot of the forecast errors for the training period. Interpret what you see in the plots.
+```{r}
+autoplot(Fortified.nnetar$residuals, series = "Residuals") +
+  guides(color = guide_legend(title = "Series")) +
+  scale_color_manual(values = c(Residuals = "red")) +
+  theme_classic() +
+  # coord_cartesian(xlim = c(15, 18)) +
+  theme(legend.position = "top") 
+```
+
+
+**Answer:** I see that the model does a pretty good job at predicting the downward demand trend, but tends to under predict peaks and tends to over predict bottoms. I would say that this model may be over-fitted.
+
+\newpage
+
+b.  Use the neural network to forecast sales for each month in the validation period (January 1994 to December 1994).
+
+```{r}
+
+Fortified.nnetar.pred <- forecast(Fortified.nnetar, h = 12)
+Fortified.nnetar.pred
+
+accuracy(Fortified.nnetar.pred, Fort.test)
+
+```
+
+**Answer:** The RMSE of train vs test suggests that this model is over-fitted.
+
+\newpage
+
+3\. Compare your neural network to an exponential smoothing model used to forecast fortified wine sales.
+
+a.  Use R's ets function to automatically select and fit an exponential smoothing model to the training period until December 1993. Which model did ets fit?
+
+```{r}
+
+Fortified.ets <- ets(Fort.train, model="ZZZ")
+summary(Fortified.ets)
+
+
+```
+
+**Answer:**  ets function fitted an M,A,M model. Multiplicative, Additive , and Multiplicative. The parameter estimates are  $\hat{\alpha} = 0.0243$, $\hat{\beta} = 0.0011$, and $\hat{\gamma} = 0.0243$.
+
+\newpage
+
+b.  Use this exponential smoothing model to forecast sales for each month in 1994.
+
+```{r}
+
+Fortified.ets.pred <- forecast(Fortified.ets, h = 12)
+
+
+accuracy(Fortified.ets.pred, Fort.test)
+
+```
+
+
+
+**Answer:** See code above.
+
+\newpage
+
+c.  How does the neural network compare to the exponential smoothing model in terms of predictive performance in the training period? In the validation period?
+
+
+```{r}
+print("Neural Network Model")
+
+accuracy(Fortified.nnetar.pred, Fort.test)
+
+```
+```{r}
+print("Exponential Smoothing Model")
+
+accuracy(Fortified.ets.pred, Fort.test)
+```
+
+```{r}
+autoplot(Fortified, series = "Actual") +
+  autolayer(Fortified.nnetar$fitted, series = "NN") +
+  autolayer(Fortified.ets$fitted, series = "ETS") +
+  autolayer(Fortified.nnetar.pred, series = "NN Prediction") +
+  autolayer(Fortified.ets.pred, series = "ETS Prediction", PI = F) +
+  guides(color = guide_legend(title = "Series")) +
+  scale_color_manual(values = c(Actual = "black", NN = "red", 
+                                `NN Prediction` = "green",
+                                ETS = "purple",
+                                `ETS Prediction` = "blue")) +
+  theme_classic() +
+  # coord_cartesian(xlim = c(15, 18)) +
+  theme(legend.position = "top") 
+```
+
+
+
+**Answer:** Comparing the predictive performance in the trainng period, the neural network model vastly out performed the exponential smoothing model with RMSE of 74 vs 222 respectively. Almost a 74% improvement over the ETS model.
+
+Comparing the predictive performance in the validation period, the neural network model out performed the exponential smoothing model with RMSE of 252 vs 318 respectively. Almost a 21% improvement over the ETS model.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
